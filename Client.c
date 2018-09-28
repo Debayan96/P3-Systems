@@ -51,7 +51,7 @@ void disconnect()
     send(sock,s,strlen(s),0);
     shutdown(sock,2);
     conn=0;
-    printf("OK");
+    printf("Disconnected\n");
 }
 
 void interactive()
