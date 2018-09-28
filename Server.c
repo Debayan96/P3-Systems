@@ -38,6 +38,7 @@ ht* create(int key,int size,char *value)//CHECKED: create a new node
 	h->key=key;
 	h->value=(char*)malloc(sizeof(char)*size);
 	strcpy((h->value),value);
+	*(h->value+size)='\0';
 	h->next=NULL;
 	return h;
 }
@@ -78,6 +79,7 @@ void htappend(int key,int size,char* value)//CHECKED: Appends to the table
 
 void delete(int key)//CHECKED: Deletes key value pair from table
 {
+	printf("Delete called\n");
 	if(table->key==key)
 	{
 		ht *x=table;
@@ -101,6 +103,7 @@ void update(int key,int size,char* value)//CHECKED: Updates the key value pair
 	free(p->value);
 	p->value=(char*)malloc(size*sizeof(char));
 	strcpy(p->value,value);
+	*(p->value+size)='\0';
 }
 
 void display()//CHECKED: Displays the contents
@@ -116,6 +119,7 @@ void display()//CHECKED: Displays the contents
 void *serve(void *data)//NOT CHECKED: Handle the requests 
 {
 	char tokens[4][1000],*msg;
+	char *msg1="OK",*msg2="Error:Key already exists",*msg3="Error:Key does not exist";
 	int stillconnect=0,c,nos,i;
 	while(1)
 	{
@@ -126,6 +130,8 @@ void *serve(void *data)//NOT CHECKED: Handle the requests
 		{
 			free(msg);
 			msg=(char*)malloc(1024*sizeof(char));
+			for(i=0;i<1024;i++)
+				buffer[i]='\0';
 			read(new_socket , buffer, 1024);
 			c=nos=0;
 			printf("recvd:%s\n",buffer);
@@ -140,21 +146,22 @@ void *serve(void *data)//NOT CHECKED: Handle the requests
 	            else
 	                tokens[nos][c++]=buffer[i];
 	        }
-	        if(!strcmp(tokens[0],"disconnect"))
+	        if(!strcmp(buffer,"disconnect"))
+			{	
 				stillconnect=0;
+				break;
+			}
 			else if(!strcmp(tokens[0],"create"))
 			{	
 				pthread_mutex_lock(&mutex_table);
 				if(htsearch(atoi(tokens[1]))==1)
 				{
-					strcpy(msg,"Error: Key already exists");
-					send(new_socket , msg , strlen(msg) , 0 );
+					send(new_socket , msg2 , strlen(msg2) , 0 );
 				}
 				else
 				{
 					htappend(atoi(tokens[1]),atoi(tokens[2]),tokens[3]);
-					strcpy(msg,"OK");
-					send(new_socket , msg , strlen(msg) , 0 );	
+					send(new_socket , msg1 , strlen(msg1) , 0 );	
 				}
 				pthread_mutex_unlock(&mutex_table);
 			}
@@ -163,13 +170,12 @@ void *serve(void *data)//NOT CHECKED: Handle the requests
 				pthread_mutex_lock(&mutex_table);
 				if(htsearch(atoi(tokens[1]))==-1)
 				{
-					strcpy(msg,"Error: Key does not exist");
-					send(new_socket , msg , strlen(msg) , 0 );
+					send(new_socket , msg3 , strlen(msg3) , 0 );
 				}
 				else
 				{
 					strcpy(msg,hvalue(atoi(tokens[1])));
-					send(new_socket , msg , strlen(msg) , 0 );	
+					send(new_socket , msg1 , strlen(msg1) , 0 );	
 				}
 				pthread_mutex_unlock(&mutex_table);
 			}
@@ -178,14 +184,12 @@ void *serve(void *data)//NOT CHECKED: Handle the requests
 				pthread_mutex_lock(&mutex_table);	
 				if(htsearch(atoi(tokens[1]))==-1)
 				{
-					strcpy(msg,"Error: Key does not exist");
-					send(new_socket , msg , strlen(msg) , 0 );
+					send(new_socket , msg3 , strlen(msg3) , 0 );
 				}
 				else
 				{
 					update(atoi(tokens[1]),atoi(tokens[2]),tokens[3]);
-					strcpy(msg,"OK");
-					send(new_socket , msg , strlen(msg) , 0 );	
+					send(new_socket , msg1 , strlen(msg1) , 0 );	
 				}
 				pthread_mutex_unlock(&mutex_table);
 			}
@@ -194,14 +198,13 @@ void *serve(void *data)//NOT CHECKED: Handle the requests
 				pthread_mutex_lock(&mutex_table);	
 				if(htsearch(atoi(tokens[1]))==-1)
 				{
-					strcpy(msg,"Error: Key does not exist");
-					send(new_socket , msg , strlen(msg) , 0 );
+					send(new_socket , msg3 , strlen(msg3) , 0 );
 				}
 				else
 				{
+					//printf("%s",tokens[1]);
 					delete(atoi(tokens[1]));
-					strcpy(msg,"OK");
-					send(new_socket , msg , strlen(msg) , 0 );	
+					send(new_socket , msg1 , strlen(msg1) , 0 );	
 				}
 				pthread_mutex_unlock(&mutex_table);
 			}
