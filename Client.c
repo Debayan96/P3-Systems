@@ -62,9 +62,12 @@ void interactive()
     {   
         nos=c=0;
         fflush(stdin);
+        for(i=0;i<4096;i++)
+            s[i]=' ';
         printf("Enter:");
         fgets(s,4096,stdin);
         p=s;
+        //printf("%s\n",p);
         for(i=0;i<strlen(s)-1;i++)
         {
             if(s[i]==' ')
@@ -81,41 +84,47 @@ void interactive()
         {
             connect1(tokens[1],tokens[2]);
         }
+
         else if(!strcmp(tokens[0],"disconnect") && nos==0)
         {
             printf("Disconnecting...\n");
             disconnect();
         }
-        else if(conn==1 && !strcmp(tokens[0],"create") && nos==3)
-        {
-            send(sock,p,strlen(p),0);
-            valread = read( sock , buffer, 1024); 
-            printf("%s\n",buffer );
-        }
-        else if(conn==1 && !strcmp(tokens[0],"read") && nos==1)
-        {
-            send(sock,p,strlen(p),0);
-            valread = read( sock , buffer, 1024); 
-            printf("%s\n",buffer );   
-        }
-        else if(conn==1 && !strcmp(tokens[0],"update") && nos==3)
-        {
-            send(sock,p,strlen(p),0);
-            valread = read( sock , buffer, 1024); 
-            printf("%s\n",buffer );   
-        }
-        else if(conn==1 && !strcmp(tokens[0],"delete") && nos==1)
-        {
-            send(sock,p,strlen(p),0);
-            valread = read( sock , buffer, 1024); 
-            printf("%s\n",buffer );
-        }
-        else if(conn==1 && !strcmp(tokens[0],"display") && nos==0)
-        {
-            send(sock,p,strlen(p),0);
-        }
         else
-            printf("Incorrect arguments entered...\n");
+        {
+            if(conn==0)
+                printf("Error:Connect to server...\n");   
+            else if(conn==1 && !strcmp(tokens[0],"create") && nos==3)
+            {
+                send(sock,p,strlen(p),0);
+                valread = read( sock , buffer, 1024); 
+                printf("%s\n",buffer );
+            }
+            else if(conn==1 && !strcmp(tokens[0],"read") && nos==1)
+            {
+                send(sock,p,strlen(p),0);
+                valread = read( sock , buffer, 1024); 
+                printf("%s\n",buffer );   
+            }
+            else if(conn==1 && !strcmp(tokens[0],"update") && nos==3)
+            {
+                send(sock,p,strlen(p),0);
+                valread = read( sock , buffer, 1024); 
+                printf("%s\n",buffer );   
+            }
+            else if(conn==1 && !strcmp(tokens[0],"delete") && nos==1)
+            {
+                send(sock,p,strlen(p),0);
+                valread = read( sock , buffer, 1024); 
+                printf("%s\n",buffer );
+            }
+            else if(conn==1 && !strcmp(tokens[0],"display") && nos==0)
+            {
+                send(sock,p,strlen(p),0);
+            }
+            else
+                printf("Incorrect arguments entered...\n");
+        }
     } 
     
 }
