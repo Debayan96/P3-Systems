@@ -79,7 +79,6 @@ void htappend(int key,int size,char* value)//CHECKED: Appends to the table
 
 void delete(int key)//CHECKED: Deletes key value pair from table
 {
-	printf("Delete called\n");
 	if(table->key==key)
 	{
 		ht *x=table;
@@ -135,7 +134,7 @@ void *serve(void *data)//NOT CHECKED: Handle the requests
 			read(new_socket , buffer, 1024);
 			c=nos=0;
 			printf("recvd:%s\n",buffer);
-			for(i=0;i<strlen(buffer)-1;i++)
+			for(i=0;i<strlen(buffer) && buffer[i]!='\n';i++)
 	        {
 	            if(buffer[i]==' ')
 	            {    
@@ -174,8 +173,8 @@ void *serve(void *data)//NOT CHECKED: Handle the requests
 				}
 				else
 				{
-					strcpy(msg,hvalue(atoi(tokens[1])));
-					send(new_socket , msg1 , strlen(msg1) , 0 );	
+					char *msg5=hvalue(atoi(tokens[1]));
+					send(new_socket , msg5 , strlen(msg5) , 0 );	
 				}
 				pthread_mutex_unlock(&mutex_table);
 			}

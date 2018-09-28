@@ -1,0 +1,9 @@
+connect 127.0.0.1 7070
+create 1 5 12345
+create 2 1 9
+create 5 7 debayan
+read 5
+update 2 2 22
+delete 1
+display
+disconnect

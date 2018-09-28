@@ -3,13 +3,17 @@
 #include <stdlib.h> 
 #include <netinet/in.h> 
 #include <string.h> 
-#define PORT 8080 
+#include <unistd.h>
 
 struct sockaddr_in address; 
 int sock = 0, valread; 
 struct sockaddr_in serv_addr; 
 char buffer[1024]={0};
 int conn=0;
+
+char s[4096],tokens[4][1000],*p;
+int nos,i,c,a1,a2,turn;
+    
     
 void connect1(char *ip,char *port)
 {
@@ -54,81 +58,110 @@ void disconnect()
     printf("Disconnected\n");
 }
 
-void interactive()
+void common(char *s)
 {
-    char s[4096],tokens[4][1000],*p;
-    int nos,i,c,a1,a2,turn;
-    while(1)
-    {   
-        nos=c=0;
-        fflush(stdin);
-        for(i=0;i<4096;i++)
-            s[i]=' ';
-        printf("Enter:");
-        fgets(s,4096,stdin);
-        p=s;
-        //printf("%s\n",p);
-        for(i=0;i<strlen(s)-1;i++)
-        {
-            if(s[i]==' ')
-            {    
-                tokens[nos][c]='\0';
-                nos++;
-                c=0;
-            }
-            else
-                tokens[nos][c++]=s[i];
-        }
-        tokens[nos][c]='\0';
-        if(!strcmp(tokens[0],"connect") && nos==2)
-        {
-            connect1(tokens[1],tokens[2]);
-        }
-
-        else if(!strcmp(tokens[0],"disconnect") && nos==0)
-        {
-            printf("Disconnecting...\n");
-            disconnect();
+    p=s;
+    nos=c=0;
+    for(i=0;i<strlen(s) && s[i]!='\n';i++)
+    {
+        if(s[i]==' ')
+        {    
+            tokens[nos][c]='\0';
+            nos++;
+            c=0;
         }
         else
+            tokens[nos][c++]=s[i];
+    }
+    tokens[nos][c]='\0';
+    printf("%s\n",tokens[0]);
+    if(!strcmp(tokens[0],"connect") && nos==2)
+    {
+        connect1(tokens[1],tokens[2]);
+    }
+    else if(!strcmp(tokens[0],"disconnect") && nos==0)
+    {
+        printf("Disconnecting...\n");
+        disconnect();
+    }
+    else
+    {
+        if(conn==0)
+            printf("Error:Connect to server...\n");   
+        else if(conn==1 && !strcmp(tokens[0],"create") && nos==3)
         {
-            if(conn==0)
-                printf("Error:Connect to server...\n");   
-            else if(conn==1 && !strcmp(tokens[0],"create") && nos==3)
-            {
-                send(sock,p,strlen(p),0);
-                valread = read( sock , buffer, 1024); 
-                printf("%s\n",buffer );
-            }
-            else if(conn==1 && !strcmp(tokens[0],"read") && nos==1)
-            {
-                send(sock,p,strlen(p),0);
-                valread = read( sock , buffer, 1024); 
-                printf("%s\n",buffer );   
-            }
-            else if(conn==1 && !strcmp(tokens[0],"update") && nos==3)
-            {
-                send(sock,p,strlen(p),0);
-                valread = read( sock , buffer, 1024); 
-                printf("%s\n",buffer );   
-            }
-            else if(conn==1 && !strcmp(tokens[0],"delete") && nos==1)
-            {
-                send(sock,p,strlen(p),0);
-                valread = read( sock , buffer, 1024); 
-                printf("%s\n",buffer );
-            }
-            else if(conn==1 && !strcmp(tokens[0],"display") && nos==0)
-            {
-                send(sock,p,strlen(p),0);
-            }
-            else
-                printf("Incorrect arguments entered...\n");
+            send(sock,p,strlen(p),0);
+            valread = read( sock , buffer, 1024); 
+            printf("%s\n",buffer );
         }
+        else if(conn==1 && !strcmp(tokens[0],"read") && nos==1)
+        {
+            send(sock,p,strlen(p),0);
+            valread = read( sock , buffer, 1024); 
+            printf("%s\n",buffer );   
+        }
+        else if(conn==1 && !strcmp(tokens[0],"update") && nos==3)
+        {
+            send(sock,p,strlen(p),0);
+            valread = read( sock , buffer, 1024); 
+            printf("%s\n",buffer );   
+        }
+        else if(conn==1 && !strcmp(tokens[0],"delete") && nos==1)
+        {
+            send(sock,p,strlen(p),0);
+            valread = read( sock , buffer, 1024); 
+            printf("%s\n",buffer );
+        }
+        else if(conn==1 && !strcmp(tokens[0],"display") && nos==0)
+        {
+            send(sock,p,strlen(p),0);
+        }
+        else
+            printf("Incorrect arguments entered...\n");
+        for(i=0;i<1024;i++)
+            buffer[i]='\0';
+    }
+    for(i=0;i<4096;i++)
+        s[i]=' ';
+}
+
+void interactive()
+{
+    while(1)
+    {   
+        fflush(stdin);
+        printf("Enter:");
+        fgets(s,4096,stdin);
+        common(s);
     } 
     
 }
    
+void batch(const char *abc)
+{
+    FILE *fptr;
+    char c;
+    int i=0;
+    fptr=fopen(abc,"r");
+    c=fgetc(fptr);
+    while(c!=EOF)
+    {
+        if(c!='\n')
+            s[i++]=c;
+        else
+        {
+            s[i]='\0';
+            i=0;
+            common(s);
+            sleep(2);
+        }
+        c=fgetc(fptr);
+    }
+    s[i]='\0';
+    common(s);
+    fclose(fptr);
+}
+
 int main(int argv, char const *argc[]) 
 { 
     if(argv==2 && !strcmp(argc[1],"interactive"))
@@ -138,7 +171,12 @@ int main(int argv, char const *argc[])
     }
     else if(argv==3 && !strcmp(argc[1],"batch"))
     {
+        printf("%s\n",argc[2]);
         printf("You are operating in batch mode...\n");
+        if( access(argc[2], F_OK ) == -1)
+            printf("Error: File not found...\nExiting...\n");
+        else
+            batch(argc[2]);
     }
     else
         printf("Incorrect arguments passed\nExiting...\n");
