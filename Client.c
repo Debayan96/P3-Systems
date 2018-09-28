@@ -62,6 +62,7 @@ void interactive()
     {   
         nos=c=0;
         fflush(stdin);
+        printf("Enter:");
         fgets(s,4096,stdin);
         p=s;
         for(i=0;i<strlen(s)-1;i++)
@@ -87,31 +88,31 @@ void interactive()
         }
         else if(conn==1 && !strcmp(tokens[0],"create") && nos==3)
         {
-            send(sock,s,strlen(s),0);
+            send(sock,p,strlen(p),0);
             valread = read( sock , buffer, 1024); 
             printf("%s\n",buffer );
         }
         else if(conn==1 && !strcmp(tokens[0],"read") && nos==1)
         {
-            send(sock,s,strlen(s),0);
+            send(sock,p,strlen(p),0);
             valread = read( sock , buffer, 1024); 
             printf("%s\n",buffer );   
         }
         else if(conn==1 && !strcmp(tokens[0],"update") && nos==3)
         {
-            send(sock,s,strlen(s),0);
+            send(sock,p,strlen(p),0);
             valread = read( sock , buffer, 1024); 
             printf("%s\n",buffer );   
         }
         else if(conn==1 && !strcmp(tokens[0],"delete") && nos==1)
         {
-            send(sock,s,strlen(s),0);
+            send(sock,p,strlen(p),0);
             valread = read( sock , buffer, 1024); 
             printf("%s\n",buffer );
         }
         else if(conn==1 && !strcmp(tokens[0],"display") && nos==0)
         {
-            send(sock,s,strlen(s),0);
+            send(sock,p,strlen(p),0);
         }
         else
             printf("Incorrect arguments entered...\n");
