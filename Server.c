@@ -132,6 +132,11 @@ void *serve(void *data)//NOT CHECKED: Handle the requests
 			for(i=0;i<1024;i++)
 				buffer[i]='\0';
 			read(new_socket , buffer, 1024);
+			if(!strcmp(buffer,""))
+			{
+				stillconnect=0;
+				break;
+			}
 			c=nos=0;
 			printf("recvd:%s\n",buffer);
 			for(i=0;i<strlen(buffer) && buffer[i]!='\n';i++)
