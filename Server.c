@@ -15,7 +15,7 @@ int server_fd, new_socket, valread;
 struct sockaddr_in address; 
 int opt = 1; 
 int addrlen = sizeof(address);
-char buffer[1024];
+char buffer[4400];
 //THE THREADS
 pthread_t t1,t2,t3,t4;
 //THE MUTEXS
@@ -117,19 +117,20 @@ void display()//CHECKED: Displays the contents
 
 void *serve(void *data)//NOT CHECKED: Handle the requests 
 {
-	char tokens[4][1000],*msg;
+	char tokens[4][4096],*msg;
 	char *msg1="OK",*msg2="Error:Key already exists",*msg3="Error:Key does not exist";
 	int stillconnect=0,c,nos,i;
 	while(1)
 	{
-		int new_socket;
+		int flag,new_socket;
 		new_socket = accept(server_fd, (struct sockaddr *)&address,(socklen_t*)&addrlen);
 		stillconnect=1;
+		flag=0;
 		while(stillconnect)
 		{
 			free(msg);
 			msg=(char*)malloc(1024*sizeof(char));
-			for(i=0;i<1024;i++)
+			for(i=0;i<4400;i++)
 				buffer[i]='\0';
 			read(new_socket , buffer, 1024);
 			if(!strcmp(buffer,""))
@@ -145,11 +146,19 @@ void *serve(void *data)//NOT CHECKED: Handle the requests
 	            {    
 	                tokens[nos][c]='\0';
 	                nos++;
+	                if(nos==4)
+	                {
+	                	nos-=1;
+	                	for(;buffer[i]!='\n' && i<strlen(buffer);i++)
+	                		tokens[nos][c++]=buffer[i];
+	                	break;
+	                }
 	                c=0;
 	            }
 	            else
 	                tokens[nos][c++]=buffer[i];
 	        }
+
 	        if(!strcmp(buffer,"disconnect"))
 			{	
 				stillconnect=0;
