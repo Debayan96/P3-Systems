@@ -66,7 +66,8 @@ void common(char *s)
     {
         if(s[i]==' ')
         {    
-            tokens[nos][c]='\0';
+        	if(nos==0)
+            	tokens[nos][c]='\0';
             nos++;
             c=0;
         }
