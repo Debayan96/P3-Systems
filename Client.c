@@ -11,7 +11,7 @@ struct sockaddr_in serv_addr;
 char buffer[1024]={0};
 int conn=0;
 
-char s[4096],tokens[4][1000],*p;
+char s[4400],tokens[4][4096],*p;
 int nos,i,c,a1,a2,turn;
     
     
@@ -88,7 +88,7 @@ void common(char *s)
     {
         if(conn==0)
             printf("Error:Connect to server...\n");   
-        else if(conn==1 && !strcmp(tokens[0],"create") && nos==3)
+        else if(conn==1 && !strcmp(tokens[0],"create") && nos>=3)
         {
             send(sock,p,strlen(p),0);
             valread = read( sock , buffer, 1024); 
@@ -100,7 +100,7 @@ void common(char *s)
             valread = read( sock , buffer, 1024); 
             printf("%s\n",buffer );   
         }
-        else if(conn==1 && !strcmp(tokens[0],"update") && nos==3)
+        else if(conn==1 && !strcmp(tokens[0],"update") && nos>=3)
         {
             send(sock,p,strlen(p),0);
             valread = read( sock , buffer, 1024); 
