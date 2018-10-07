@@ -8,10 +8,10 @@
 struct sockaddr_in address; 
 int sock = 0, valread; 
 struct sockaddr_in serv_addr; 
-char buffer[1024]={0};
+char buffer[5000]={0};
 int conn=0;
 
-char s[4400],tokens[4][4096],*p;
+char s[5000],tokens[5][5000],*p;
 int nos,i,c,a1,a2,turn;
     
     
@@ -42,6 +42,7 @@ void connect1(char *ip,char *port)
         return;
     }
     conn=1;
+    printf("Connected");
 }
 
 void disconnect()
@@ -58,10 +59,13 @@ void disconnect()
     printf("Disconnected\n");
 }
 
-void common(char *s)
+int common(char *s)
 {
+    int i;
+    i=0;
     p=s;
     nos=c=0;
+    //printf("%s\n\n\n\n",s);
     for(i=0;i<strlen(s) && s[i]!='\n';i++)
     {
         if(s[i]==' ')
@@ -69,15 +73,22 @@ void common(char *s)
         	if(nos==0)
             	tokens[nos][c]='\0';
             nos++;
+            if(nos==4)
+            {
+                nos-=1;
+                for(;i<strlen(buffer);i++)
+                    tokens[nos][c++]=buffer[i];
+                break;
+            }
             c=0;
         }
         else
             tokens[nos][c++]=s[i];
     }
     tokens[nos][c]='\0';
-    printf("%s\n",tokens[0]);
     if(!strcmp(tokens[0],"connect") && nos==2)
     {
+        printf("Connecting");
         connect1(tokens[1],tokens[2]);
     }
     else if(!strcmp(tokens[0],"disconnect") && nos==0)
@@ -92,25 +103,25 @@ void common(char *s)
         else if(conn==1 && !strcmp(tokens[0],"create") && nos>=3)
         {
             send(sock,p,strlen(p),0);
-            valread = read( sock , buffer, 1024); 
+            valread = read( sock , buffer, 5000); 
             printf("%s\n",buffer );
         }
         else if(conn==1 && !strcmp(tokens[0],"read") && nos==1)
         {
             send(sock,p,strlen(p),0);
-            valread = read( sock , buffer, 1024); 
+            valread = read( sock , buffer, 5000); 
             printf("%s\n",buffer );   
         }
         else if(conn==1 && !strcmp(tokens[0],"update") && nos>=3)
         {
             send(sock,p,strlen(p),0);
-            valread = read( sock , buffer, 1024); 
+            valread = read( sock , buffer, 5000); 
             printf("%s\n",buffer );   
         }
         else if(conn==1 && !strcmp(tokens[0],"delete") && nos==1)
         {
             send(sock,p,strlen(p),0);
-            valread = read( sock , buffer, 1024); 
+            valread = read( sock , buffer, 5000); 
             printf("%s\n",buffer );
         }
         else if(conn==1 && !strcmp(tokens[0],"display") && nos==0)
@@ -119,21 +130,23 @@ void common(char *s)
         }
         else
             printf("Incorrect arguments entered...\n");
-        for(i=0;i<1024;i++)
+        for(i=0;i<5000;i++)
             buffer[i]='\0';
     }
-    for(i=0;i<4096;i++)
+    for(i=0;i<5000;i++)
         s[i]=' ';
+    return 1;
 }
 
 void interactive()
 {
+    int x;
     while(1)
     {   
         fflush(stdin);
         printf("Enter:");
         fgets(s,4096,stdin);
-        common(s);
+        x=common(s);
     } 
     
 }
@@ -142,7 +155,8 @@ void batch(const char *abc)
 {
     FILE *fptr;
     char c;
-    int i=0;
+    int i=0,x=-1;
+    long int y=0;
     fptr=fopen(abc,"r");
     c=fgetc(fptr);
     while(c!=EOF)
@@ -152,9 +166,14 @@ void batch(const char *abc)
         else
         {
             s[i]='\0';
+            //for(y=0;y<strlen(s);y++)
+            //    printf("%c",s[y]);
             i=0;
-            common(s);
+            //printf("\n%ld",y);
             sleep(2);
+            x=common(s);
+            while(x!=1);
+            x=0;
         }
         c=fgetc(fptr);
     }
@@ -172,7 +191,7 @@ int main(int argv, char const *argc[])
     }
     else if(argv==3 && !strcmp(argc[1],"batch"))
     {
-        printf("%s\n",argc[2]);
+        //printf("%s\n",argc[2]);
         printf("You are operating in batch mode...\n");
         if( access(argc[2], F_OK ) == -1)
             printf("Error: File not found...\nExiting...\n");
