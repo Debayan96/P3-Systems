@@ -244,7 +244,7 @@ void sockcreate(char *ip,char *port)//CHECKED: Creates the socket
         exit(1); 
     } 
     address.sin_family = AF_INET; 
-    address.sin_addr.s_addr = INADDR_ANY; 
+    address.sin_addr.s_addr = inet_addr(ip); 
     address.sin_port = htons(atoi(port)); 
     if (bind(server_fd, (struct sockaddr *)&address,sizeof(address))<0) 
     { 
