@@ -37,7 +37,7 @@ ht* create(int key,int size,char *value)//CHECKED: create a new node
 	ht *h=(ht*)malloc(sizeof(ht));
 	h->key=key;
 	h->value=(char*)malloc(sizeof(char)*size);
-	strcpy((h->value),value);
+	strncpy((h->value),value,size);
 	*(h->value+size)='\0';
 	h->next=NULL;
 	return h;
@@ -117,7 +117,7 @@ void display()//CHECKED: Displays the contents
 
 void *serve(void *data)//NOT CHECKED: Handle the requests 
 {
-	char tokens[4][4096],*msg;
+	char tokens[4][4097],*msg;
 	char *msg1="OK",*msg2="Error:Key already exists",*msg3="Error:Key does not exist";
 	int stillconnect=0,c,nos,i;
 	while(1)
@@ -132,7 +132,7 @@ void *serve(void *data)//NOT CHECKED: Handle the requests
 			msg=(char*)malloc(1024*sizeof(char));
 			for(i=0;i<4400;i++)
 				buffer[i]='\0';
-			read(new_socket , buffer, 1024);
+			read(new_socket , buffer, 4400);
 			if(!strcmp(buffer,""))
 			{
 				stillconnect=0;
@@ -149,7 +149,7 @@ void *serve(void *data)//NOT CHECKED: Handle the requests
 	                if(nos==4)
 	                {
 	                	nos-=1;
-	                	for(;buffer[i]!='\n' && i<strlen(buffer);i++)
+	                	for(;i<strlen(buffer);i++)
 	                		tokens[nos][c++]=buffer[i];
 	                	break;
 	                }
@@ -158,7 +158,7 @@ void *serve(void *data)//NOT CHECKED: Handle the requests
 	            else
 	                tokens[nos][c++]=buffer[i];
 	        }
-
+	        tokens[nos][c]='\0';
 	        if(!strcmp(buffer,"disconnect"))
 			{	
 				stillconnect=0;
