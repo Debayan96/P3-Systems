@@ -42,7 +42,7 @@ void connect1(char *ip,char *port)
         return;
     }
     conn=1;
-    printf("Connected");
+    printf("Connected\n");
 }
 
 void disconnect()
@@ -65,13 +65,12 @@ int common(char *s)
     i=0;
     p=s;
     nos=c=0;
-    //printf("%s\n\n\n\n",s);
+    //printf("%s\n",s);
     for(i=0;i<strlen(s) && s[i]!='\n';i++)
     {
         if(s[i]==' ')
         {    
-        	if(nos==0)
-            	tokens[nos][c]='\0';
+        	tokens[nos][c]='\0';
             nos++;
             if(nos==4)
             {
@@ -88,7 +87,7 @@ int common(char *s)
     tokens[nos][c]='\0';
     if(!strcmp(tokens[0],"connect") && nos==2)
     {
-        printf("Connecting");
+        printf("Connecting...\n");
         connect1(tokens[1],tokens[2]);
     }
     else if(!strcmp(tokens[0],"disconnect") && nos==0)
